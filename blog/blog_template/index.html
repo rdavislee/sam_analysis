@@ -1,0 +1,496 @@
+<html>
+<head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+<link rel="shortcut icon" href="images/icon.ico">
+<style type="text/css">
+	body {
+		background-color: #f5f9ff;
+	}
+
+	.content-margin-container {
+		display: flex;
+		width: 100%;
+		justify-content: left;
+		align-items: center;
+	}
+	.main-content-block {
+		width: 70%;
+    max-width: 1100px;
+		background-color: #fff;
+		border-left: 1px solid #DDD;
+		border-right: 1px solid #DDD;
+		padding: 8px 8px 8px 8px;
+		font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+		line-height: 1.6;
+	}
+	.margin-left-block {
+			font-size: 14px;
+			width: 15%;
+			max-width: 130px;
+			position: relative;
+			margin-left: 10px;
+			text-align: left;
+			font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+			padding: 5px;
+	}
+	.margin-right-block {
+			font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+			font-size: 14px;
+			width: 25%;
+			max-width: 256px;
+			position: relative;
+			text-align: left;
+			padding: 10px;
+			color: #666;
+	}
+
+	img {
+			max-width: 100%;
+			height: auto;
+			display: block;
+			margin: auto;
+	}
+
+	a:link,a:visited {
+		color: #0e7862;
+		text-decoration: none;
+	}
+	a:hover {
+		color: #24b597;
+	}
+
+	h1 {
+		font-size: 22px;
+		margin-top: 20px;
+		margin-bottom: 10px;
+		border-bottom: 1px solid #DDD;
+		padding-bottom: 5px;
+	}
+
+	table.header {
+    font-weight: 300;
+    font-size: 17px;
+    flex-grow: 1;
+		width: 70%;
+    max-width: calc(100% - 290px);
+	}
+	table td, table td * {
+	    vertical-align: middle;
+	    position: relative;
+	}
+
+	hr {
+    height: 1px;
+    border: none;
+    background-color: #DDD;
+  }
+
+	div.hypothesis {
+		width: 90%;
+		background-color: #f0f7f5;
+		border: 1px solid #0e7862;
+		border-radius: 10px;
+		font-size: 16px;
+		text-align: center;
+		margin: 20px auto;
+		padding: 16px;
+	}
+
+	div.citation {
+    font-size: 0.85em;
+    background-color:#fff;
+    padding: 10px;
+		height: auto;
+  }
+
+	table.results {
+		border-collapse: collapse;
+		margin: 20px auto;
+		font-size: 14px;
+	}
+	table.results th, table.results td {
+		border: 1px solid #ddd;
+		padding: 8px 12px;
+		text-align: center;
+	}
+	table.results th {
+		background-color: #f0f7f5;
+	}
+	table.results tr:nth-child(even) {
+		background-color: #f9f9f9;
+	}
+
+	.positive {
+		color: #0e7862;
+		font-weight: bold;
+	}
+	.negative {
+		color: #c0392b;
+		font-weight: bold;
+	}
+
+</style>
+
+<title>When Do Flat Minima Help? A Study of SAM Across Data Regimes</title>
+<meta property="og:title" content="When Do Flat Minima Help?" />
+<meta charset="UTF-8">
+</head>
+
+<body>
+
+	<div class="content-margin-container">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block">
+					<table class="header" align=left>
+							<tr>
+								<td colspan=4>
+									<span style="font-size: 28px; font-weight: bold;">When Do Flat Minima Help?</span><br>
+									<span style="font-size: 18px; color: #666;">A Study of Sharpness-Aware Minimization Across Data Regimes</span>
+								</td>
+							</tr>
+							<tr>
+								<td colspan=4 align=left style="padding-top: 0px; padding-bottom: 0px;">
+									<span style="font-size:18px">Davis Lee</span>
+								</td>
+							</tr>
+							<tr>
+								<td colspan=4 align=left style="padding-top: 15px;">
+									<span style="font-size:16px">Final project for 6.7960 Deep Learning, MIT</span><br>
+									<span style="font-size:14px; color: #666;">December 2025 · <a href="https://github.com/rdavislee/sam_analysis">GitHub Repository</a></span>
+								</td>
+							</tr>
+					</table>
+				</div>
+				<div class="margin-right-block">
+				</div>
+	</div>
+
+	<!-- Abstract/TL;DR -->
+	<div class="content-margin-container" id="abstract">
+			<div class="margin-left-block">
+        <div style="position:fixed; max-width:inherit; top:max(20%,120px)">
+            <b style="font-size:16px">Outline</b><br><br>
+            <a href="#intro">Introduction</a><br><br>
+            <a href="#background">Background</a><br><br>
+            <a href="#experiments">Experiments</a><br><br>
+            <a href="#results">Results</a><br><br>
+            <a href="#discussion">Discussion</a><br><br>
+            <a href="#conclusion">Conclusion</a><br><br>
+            <a href="#references">References</a><br><br>
+        </div>
+			</div>
+			<div class="main-content-block">
+				<div class="hypothesis">
+					<b>TL;DR:</b> We systematically evaluate Sharpness-Aware Minimization (SAM) across different dataset sizes and label noise levels. 
+					While SAM excels with noisy labels and sufficient data (+6.3% accuracy), it can actually <em>hurt</em> performance 
+					in intermediate data regimes (−6.5% at 10% data). The relationship between flat minima and generalization is more nuanced than commonly assumed.
+				</div>
+			</div>
+			<div class="margin-right-block">
+			</div>
+	</div>
+
+	<!-- Introduction -->
+	<div class="content-margin-container" id="intro">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block">
+					<h1>Introduction</h1>
+					<p>
+					A persistent intuition in deep learning holds that "flat" minima of the loss landscape—regions where the loss remains low under small perturbations to the weights—generalize better than "sharp" minima. This intuition dates back to early work by Hochreiter and Schmidhuber <a href="#ref_1">[1]</a> and gained renewed attention when Keskar et al. <a href="#ref_2">[2]</a> observed that large-batch training tends to find sharper minima that generalize poorly. The appeal is intuitive: if the loss doesn't change much when we perturb the weights, the solution should be robust to the distribution shift between training and test data.
+					</p>
+					<p>
+					This intuition motivated Sharpness-Aware Minimization (SAM), introduced by Foret et al. <a href="#ref_3">[3]</a> in 2021. Rather than simply minimizing the training loss, SAM seeks parameters whose entire neighborhood has uniformly low loss. The algorithm achieves state-of-the-art results across numerous benchmarks and, notably, provides robustness to label noise comparable to methods specifically designed for noisy labels.
+					</p>
+					<p>
+					However, SAM comes at a cost: it requires two forward-backward passes per iteration, effectively doubling training time. This raises a practical question that the original paper does not fully address: <em>when is this extra computation worth it?</em> The existing literature demonstrates SAM's benefits on standard benchmarks with full datasets, but practitioners often face messier situations—limited data, noisy annotations, or both.
+					</p>
+					<p>
+					In this work, we systematically investigate SAM's effectiveness across different data regimes. We vary both the amount of training data (1%, 10%, and 100% of CIFAR-10) and the level of label noise (0%, 20%, and 40% random label flips). Our experiments reveal a surprising non-monotonic relationship: SAM helps at the extremes but can significantly hurt performance in intermediate data regimes—a finding with important practical implications.
+					</p>
+			</div>
+			<div class="margin-right-block">
+				The flat minima hypothesis has been influential but also controversial. Dinh et al. <a href="#ref_4">[4]</a> showed that sharpness measures can be manipulated through reparametrization without changing the function computed.
+			</div>
+	</div>
+
+	<!-- Background -->
+	<div class="content-margin-container" id="background">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block">
+					<h1>Background</h1>
+					
+					<p><b>Loss Landscape Geometry.</b> 
+					Neural network training can be viewed as navigating a high-dimensional loss landscape. The geometry of this landscape—particularly around the minima where training converges—has been linked to generalization. Sharp minima, characterized by high curvature (large eigenvalues of the Hessian), suggest that small changes to weights cause large changes in loss. Flat minima, with low curvature, suggest robustness to perturbations. The connection to generalization comes from viewing the train-test gap as a perturbation: if the training minimum is flat, the model should perform similarly on the slightly different test distribution.
+					</p>
+
+					<p>
+					Recent theoretical work has deepened our understanding of this connection. Gatmiry et al. <a href="#ref_5">[5]</a> showed that SGD with label noise implicitly minimizes sharpness, biasing toward simple, low-rank solutions. This implicit bias may explain why SGD often finds good solutions despite the vast space of possibilities. However, the picture is complicated by results showing that sharp minima <em>can</em> generalize well <a href="#ref_4">[4]</a>, and that the relationship between flatness and generalization depends on how flatness is measured.
+					</p>
+
+					<p><b>Sharpness-Aware Minimization.</b>
+					SAM makes the flatness bias explicit. Instead of minimizing the training loss L(w), SAM minimizes the worst-case loss in a neighborhood around the current weights:
+					</p>
+					<center>
+						<p style="font-family: 'Times New Roman', serif; font-size: 18px;">
+							min<sub>w</sub> max<sub>||ε||≤ρ</sub> L(w + ε)
+						</p>
+					</center>
+					<p>
+					where ρ controls the neighborhood size. In practice, the inner maximization is approximated using a single gradient ascent step, leading to a two-step update: (1) compute the gradient and take an ascent step to find the worst-case perturbation, then (2) compute the gradient at the perturbed point and use it to update the original weights. This doubles the computational cost but explicitly encourages flat minima.
+					</p>
+
+					<p><b>Prior Findings on Noise Robustness.</b>
+					A striking finding from the original SAM paper is its robustness to label noise. On CIFAR-10 with randomly flipped labels, SAM matches or exceeds methods specifically designed for noisy labels <a href="#ref_3">[3]</a>. Baek et al. <a href="#ref_6">[6]</a> investigated why this occurs, finding that SAM implicitly upweights the gradient contribution from clean examples. Interestingly, they found that peak performance under noise occurs with early stopping, before full convergence—suggesting the mechanism differs from simply finding flatter final minima.
+					</p>
+
+					<p>
+					Less explored is how SAM behaves with limited data. Li et al. <a href="#ref_7">[7]</a> observed that SAM can underperform on small datasets like Flowers-102, but did not systematically study the interaction between dataset size and noise. MosaicML's engineering documentation notes that SAM provides no benefit when training data is seen only once <a href="#ref_8">[8]</a>, suggesting its benefits relate to preventing overfitting across multiple epochs. These scattered observations motivate our systematic investigation.
+					</p>
+			</div>
+			<div class="margin-right-block" style="transform: translate(0%, 0%);">
+				<br><br><br><br><br>
+				The SAM neighborhood size ρ is typically set to 0.05. Adaptive SAM (ASAM) <a href="#ref_9">[9]</a> makes this scale-invariant, using ρ≈2.0 instead.
+				<br><br><br><br><br><br><br><br><br><br><br>
+				Kwon et al. <a href="#ref_9">[9]</a> introduced ASAM to address the scale-sensitivity of the original sharpness definition.
+			</div>
+	</div>
+
+	<!-- Experiments -->
+	<div class="content-margin-container" id="experiments">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block">
+					<h1>Experiments</h1>
+					
+					<p><b>Setup.</b>
+					We train ResNet-18 on CIFAR-10 using either standard SGD with momentum or SAM (with SGD as the base optimizer). All models are trained for 100 epochs with batch size 128, initial learning rate 0.1, momentum 0.9, and weight decay 5×10<sup>−4</sup>. We use cosine annealing for the learning rate schedule. For SAM, we use the default neighborhood size ρ=0.05. Standard data augmentation (random crops, horizontal flips) is applied in all experiments.
+					</p>
+
+					<p><b>Data Regimes.</b>
+					We systematically vary two factors:
+					</p>
+					<ul>
+						<li><b>Dataset size:</b> 1% (500 samples), 10% (5,000 samples), or 100% (50,000 samples) of the CIFAR-10 training set, using stratified sampling to maintain class balance.</li>
+						<li><b>Label noise:</b> 0%, 20%, or 40% of training labels randomly flipped to a different class.</li>
+					</ul>
+					<p>
+					This yields a 3×3 matrix of conditions, each evaluated with both SGD and SAM (18 total training runs). The test set remains clean in all cases—we measure generalization to the true data distribution.
+					</p>
+
+					<p><b>Metrics.</b>
+					We report test accuracy on the clean test set as our primary metric. We also measure the generalization gap (train accuracy minus test accuracy) and estimate loss landscape sharpness by measuring the increase in loss under random weight perturbations of magnitude ρ=0.05.
+					</p>
+			</div>
+			<div class="margin-right-block">
+				With 100 epochs and the 2× slowdown of SAM, the full experiment suite runs in approximately 4 hours on a single A100 GPU.
+			</div>
+	</div>
+
+	<!-- Results -->
+	<div class="content-margin-container" id="results">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block">
+					<h1>Results</h1>
+
+					<p><b>Main Finding: Non-Monotonic Benefit.</b>
+					Figure 1 shows our central result: the difference in test accuracy between SAM and SGD across all conditions. The pattern is striking and unexpected. SAM's benefit is not monotonic with dataset size—it helps at the extremes (1% and 100% data) but <em>hurts</em> in the middle (10% data).
+					</p>
+
+					<img src="./images/fig1_heatmap.png" width="600px" style="margin: 20px auto;"/>
+					<p style="text-align: center; font-size: 14px; color: #666;">
+						<b>Figure 1:</b> SAM improvement over SGD (test accuracy difference in percentage points). 
+						Green indicates SAM helps; red indicates SAM hurts. The 10% data regime shows consistent negative effects.
+					</p>
+
+					<p>
+					At full data with 40% label noise, SAM provides a substantial 6.34 percentage point improvement (80.90% vs 74.56%), confirming its known strength in noisy settings. But at 10% data with clean labels, SAM causes a 6.51 point <em>drop</em> (55.26% vs 61.77%)—a significant degradation that would matter in practice.
+					</p>
+
+					<p><b>Training Dynamics.</b>
+					Figure 2 reveals how these differences emerge during training. In the small-data regime, both optimizers struggle and neither fits the training data well. In the intermediate regime, SGD fits the training data aggressively while SAM's flatness constraint prevents full fitting—leading to worse test performance despite a smaller generalization gap. At full data, both eventually fit well, but SAM's flatter solution transfers better to the test set.
+					</p>
+
+					<img src="./images/fig2_learning_curves.png" width="700px" style="margin: 20px auto;"/>
+					<p style="text-align: center; font-size: 14px; color: #666;">
+						<b>Figure 2:</b> Training dynamics across data regimes. The 10% data case shows SAM underfitting relative to SGD.
+					</p>
+
+					<p>
+					The learning curves reveal a key distinction: at 10% data, SGD reaches 86.2% training accuracy while SAM reaches only 64.9%. SAM isn't just finding a flatter minimum—it's failing to fit the training data. The flatness constraint acts as excessive regularization when data is limited but not trivially small.
+					</p>
+
+					<p><b>Sharpness and Generalization.</b>
+					Figure 3 plots the estimated sharpness against generalization gap for all experiments. While there is a general trend—flatter minima tend to have smaller generalization gaps—the correlation is weak and the relationship is clearly not deterministic.
+					</p>
+
+					<img src="./images/fig3_sharpness.png" width="550px" style="margin: 20px auto;"/>
+					<p style="text-align: center; font-size: 14px; color: #666;">
+						<b>Figure 3:</b> Sharpness vs. generalization gap. Points are colored by optimizer. 
+						The correlation is present but weak, and lower sharpness does not guarantee better test accuracy.
+					</p>
+
+					<p>
+					Notably, at 100% data with no noise, SGD has sharpness 0.20 while SAM has 0.05—a 4× reduction—yet their test accuracies differ by less than 1%. This suggests that achieving flat minima is neither necessary nor sufficient for good generalization; what matters is whether the flatness constraint helps or hurts learning in the specific data regime.
+					</p>
+
+					<p><b>Scaling Behavior.</b>
+					Figure 4 shows test accuracy as a function of dataset size, separately for each noise level. The non-monotonic pattern is especially visible in the clean-data case: SAM starts above SGD at 1%, dips well below at 10%, then catches up at 100%.
+					</p>
+
+					<img src="./images/fig4_accuracy.png" width="700px" style="margin: 20px auto;"/>
+					<p style="text-align: center; font-size: 14px; color: #666;">
+						<b>Figure 4:</b> Test accuracy vs. dataset size for different noise levels. 
+						SAM's advantage grows with noise at full data, but the 10% regime consistently shows SAM underperforming.
+					</p>
+
+					<p>
+					At high noise levels, SAM's advantage emerges more clearly with scale: the gap between SAM and SGD grows from +1.21% at 1% data to +6.34% at 100% data when 40% of labels are corrupted. This confirms SAM's strength in noisy, data-rich regimes.
+					</p>
+			</div>
+			<div class="margin-right-block">
+				<br><br><br><br><br><br><br><br>
+				The −6.51% drop at 10% data with clean labels is our most surprising finding and suggests caution when applying SAM with limited data.
+				<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+				Training accuracy at convergence:<br>
+				• 1% data: both ~70-90%<br>
+				• 10% data: SGD 86%, SAM 65%<br>
+				• 100% data: both ~97%
+				<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+				Sharpness was estimated by measuring loss increase under random perturbations with ||ε||=0.05·||w||.
+			</div>
+	</div>
+
+	<!-- Discussion -->
+	<div class="content-margin-container" id="discussion">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block">
+					<h1>Discussion</h1>
+
+					<p><b>Why SAM Helps with Noise and Sufficient Data.</b>
+					Our results at 100% data align well with prior work. With abundant clean data, both SGD and SAM learn effectively, and SAM's slight edge (+0.95%) comes from finding a somewhat more robust solution. As noise increases, the advantage grows substantially: SAM's implicit upweighting of clean examples <a href="#ref_6">[6]</a> and resistance to memorizing mislabeled points provides a clear benefit. The +6.34% improvement at 40% noise represents a meaningful gain that could justify the 2× computational cost in many applications.
+					</p>
+
+					<p><b>Why SAM Hurts in the Intermediate Regime.</b>
+					The surprising negative results at 10% data demand explanation. We hypothesize that this regime represents a critical transition point. With 5,000 samples, there is enough data to learn meaningful features, but not enough for the model to generalize without extracting maximum signal from each example. SGD's willingness to fit the training data aggressively—even at the cost of sharpness—allows it to capture more of this limited signal. SAM's flatness constraint acts as excessive regularization, preventing the model from fitting well enough.
+					</p>
+
+					<p>
+					The generalization gap data supports this interpretation. At 10% data with no noise, SGD has a large generalization gap (24.4%) but high test accuracy (61.8%). SAM has a much smaller gap (9.7%) but lower test accuracy (55.3%). SAM is technically "generalizing better" in the sense that train and test performance are similar—but both are worse because the model is underfitting.
+					</p>
+
+					<p><b>Why SAM Helps with Very Small Data.</b>
+					The positive results at 1% data were unexpected given our hypothesis that SAM would hurt with limited data. However, this regime is qualitatively different: with only 500 samples, both optimizers are in the underfitting regime. Neither can memorize the data effectively, and the test accuracies (33-37%) are barely above random. In this regime, SAM's regularization is not excessive—there's nothing to overfit anyway—and its implicit bias may provide a slight structural advantage.
+					</p>
+
+					<p><b>Practical Recommendations.</b>
+					Based on our findings, we offer the following guidelines:
+					</p>
+					<ul>
+						<li><b>Use SAM</b> when you have abundant data (tens of thousands of samples) and expect label noise or other data quality issues.</li>
+						<li><b>Avoid SAM</b> in intermediate data regimes (thousands of samples) where every training example carries significant signal.</li>
+						<li><b>SAM is neutral</b> with abundant, clean data—the 2× cost provides only marginal benefit.</li>
+						<li><b>With tiny datasets</b>, SAM provides modest gains, but both optimizers will perform poorly regardless.</li>
+					</ul>
+
+					<p><b>Limitations.</b>
+					Our study has several limitations. We examined only one architecture (ResNet-18) on one dataset (CIFAR-10). The specific data fraction thresholds (1%, 10%, 100%) may not generalize to other settings. We used a single random seed, so individual results have uncertainty. Finally, our sharpness measurements are approximate and may not fully capture the relevant geometry.
+					</p>
+			</div>
+			<div class="margin-right-block">
+				<br><br><br><br>
+				The 10% data regime corresponds to roughly 100 samples per class—a realistic scenario for many specialized applications.
+				<br><br><br><br><br><br><br><br><br><br><br><br><br>
+				This pattern mirrors the bias-variance tradeoff: SAM adds bias (toward flat solutions) that helps when variance dominates but hurts when bias is already the limiting factor.
+			</div>
+	</div>
+
+	<!-- Conclusion -->
+	<div class="content-margin-container" id="conclusion">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block">
+					<h1>Conclusion</h1>
+					<p>
+					We conducted a systematic study of Sharpness-Aware Minimization across different data regimes, varying both dataset size and label noise. Our key finding is that SAM's benefit is non-monotonic with dataset size: it helps at the extremes (very small or full datasets) but can significantly hurt in intermediate regimes. At 10% data, SAM's flatness constraint causes underfitting, leading to a 6.5 percentage point drop in accuracy compared to standard SGD.
+					</p>
+					<p>
+					This finding has practical implications. SAM's 2× computational cost is justified when training on large, noisy datasets—where it provides substantial improvements—but may be counterproductive when data is limited. The flat minima hypothesis, while capturing important intuitions, is not a universal prescription: what matters is whether the inductive bias toward flatness helps or hurts learning in the specific setting.
+					</p>
+					<p>
+					Future work could investigate whether adaptive methods (varying ρ based on data regime), alternative sharpness measures, or hybrid approaches could provide SAM's benefits more consistently. Understanding the precise transition points between regimes and how they depend on architecture and data complexity would also be valuable.
+					</p>
+			</div>
+			<div class="margin-right-block">
+			</div>
+	</div>
+
+	<!-- References -->
+	<div class="content-margin-container" id="references">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block">
+					<div class='citation' style="height:auto; margin-top: 30px; border-top: 1px solid #DDD; padding-top: 20px;">
+						<span style="font-size:18px; font-weight: bold;">References</span><br><br>
+						
+						<a id="ref_1"></a>[1] S. Hochreiter and J. Schmidhuber, 
+						<a href="https://www.bioinf.jku.at/publications/older/3304.pdf">"Flat Minima"</a>, 
+						Neural Computation, 1997.<br><br>
+						
+						<a id="ref_2"></a>[2] N. S. Keskar, D. Mudigere, J. Nocedal, M. Smelyanskiy, and P. T. P. Tang, 
+						<a href="https://arxiv.org/abs/1609.04836">"On Large-Batch Training for Deep Learning: Generalization Gap and Sharp Minima"</a>, 
+						ICLR 2017.<br><br>
+						
+						<a id="ref_3"></a>[3] P. Foret, A. Kleiner, H. Mobahi, and B. Neyshabur, 
+						<a href="https://arxiv.org/abs/2010.01412">"Sharpness-Aware Minimization for Efficiently Improving Generalization"</a>, 
+						ICLR 2021.<br><br>
+						
+						<a id="ref_4"></a>[4] L. Dinh, R. Pascanu, S. Bengio, and Y. Bengio, 
+						<a href="https://arxiv.org/abs/1703.04933">"Sharp Minima Can Generalize For Deep Nets"</a>, 
+						ICML 2017.<br><br>
+						
+						<a id="ref_5"></a>[5] K. Gatmiry, Z. Li, S. J. Reddi, and S. Jegelka, 
+						<a href="https://proceedings.mlr.press/v235/gatmiry24a.html">"Simplicity Bias via Global Convergence of Sharpness Minimization"</a>, 
+						ICML 2024.<br><br>
+						
+						<a id="ref_6"></a>[6] C. Baek, J. Z. Kolter, and A. Raghunathan, 
+						<a href="https://arxiv.org/abs/2405.03676">"Why is SAM Robust to Label Noise?"</a>, 
+						arXiv preprint, 2024.<br><br>
+						
+						<a id="ref_7"></a>[7] T. Li, P. Zhou, Z. He, X. Cheng, and Y. Huang, 
+						<a href="https://arxiv.org/abs/2403.12350">"Friendly Sharpness-Aware Minimization"</a>, 
+						CVPR 2024.<br><br>
+						
+						<a id="ref_8"></a>[8] MosaicML, 
+						<a href="https://docs.mosaicml.com/projects/composer/en/latest/method_cards/sam.html">"Sharpness Aware Minimization - Composer Documentation"</a>, 
+						2024.<br><br>
+						
+						<a id="ref_9"></a>[9] J. Kwon, J. Kim, H. Park, and I. K. Choi, 
+						<a href="https://arxiv.org/abs/2102.11600">"ASAM: Adaptive Sharpness-Aware Minimization for Scale-Invariant Learning"</a>, 
+						ICML 2021.<br><br>
+
+					</div>
+			</div>
+			<div class="margin-right-block">
+			</div>
+	</div>
+
+	<div class="content-margin-container">
+			<div class="margin-left-block">
+			</div>
+			<div class="main-content-block" style="text-align: center; padding: 30px; color: #999; font-size: 14px;">
+				<hr>
+				6.7960 Deep Learning Final Project · MIT · December 2025
+			</div>
+			<div class="margin-right-block">
+			</div>
+	</div>
+
+</body>
+</html>
