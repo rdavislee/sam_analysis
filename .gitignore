@@ -130,4 +130,5 @@ dmypy.json
 
 # Experiment specific
 results/
+results_1/
 data/

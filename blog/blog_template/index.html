@@ -200,7 +200,7 @@
 			<div class="main-content-block">
 					<h1>Introduction</h1>
 					<p>
-					A persistent intuition in deep learning holds that "flat" minima of the loss landscape—regions where the loss remains low under small perturbations to the weights—generalize better than "sharp" minima. This intuition dates back to early work by Hochreiter and Schmidhuber <a href="#ref_1">[1]</a> and gained renewed attention when Keskar et al. <a href="#ref_2">[2]</a> observed that large-batch training tends to find sharper minima that generalize poorly. The appeal is intuitive: if the loss doesn't change much when we perturb the weights, the solution should be robust to the distribution shift between training and test data.
+					A persistent intuition in deep learning holds that "flat" minima of the loss landscape (regions where the loss remains low under small perturbations to the weights) generalize better than "sharp" minima. This intuition dates back to early work by Hochreiter and Schmidhuber <a href="#ref_1">[1]</a> and gained renewed attention when Keskar et al. <a href="#ref_2">[2]</a> observed that large-batch training tends to find sharper minima that generalize poorly. The appeal is intuitive: if the loss doesn't change much when we perturb the weights, the solution should be robust to the distribution shift between training and test data.
 					</p>
 					<p>
 					This intuition motivated Sharpness-Aware Minimization (SAM), introduced by Foret et al. <a href="#ref_3">[3]</a> in 2021. Rather than simply minimizing the training loss, SAM seeks parameters whose entire neighborhood has uniformly low loss. The algorithm achieves state-of-the-art results across numerous benchmarks and, notably, provides robustness to label noise comparable to methods specifically designed for noisy labels.
@@ -209,7 +209,7 @@
 					However, SAM comes at a cost: it requires two forward-backward passes per iteration, effectively doubling training time. This raises a practical question that the original paper does not fully address: <em>when is this extra computation worth it?</em> The existing literature demonstrates SAM's benefits on standard benchmarks with full datasets, but practitioners often face messier situations—limited data, noisy annotations, or both.
 					</p>
 					<p>
-					In this work, we systematically investigate SAM's effectiveness across different data regimes. We vary both the amount of training data (1%, 10%, and 100% of CIFAR-10) and the level of label noise (0%, 20%, and 40% random label flips). Our experiments reveal a surprising non-monotonic relationship: SAM helps at the extremes but can significantly hurt performance in intermediate data regimes—a finding with important practical implications.
+					In this work, we systematically investigate SAM's effectiveness across different data regimes. We vary both the amount of training data (1%, 10%, and 100% of CIFAR-10) and the level of label noise (0%, 20%, and 40% random label flips). Our experiments reveal a surprising non-monotonic relationship: SAM helps at the extremes but can significantly hurt performance in intermediate data regimes.
 					</p>
 			</div>
 			<div class="margin-right-block">
@@ -225,7 +225,7 @@
 					<h1>Background</h1>
 					
 					<p><b>Loss Landscape Geometry.</b> 
-					Neural network training can be viewed as navigating a high-dimensional loss landscape. The geometry of this landscape—particularly around the minima where training converges—has been linked to generalization. Sharp minima, characterized by high curvature (large eigenvalues of the Hessian), suggest that small changes to weights cause large changes in loss. Flat minima, with low curvature, suggest robustness to perturbations. The connection to generalization comes from viewing the train-test gap as a perturbation: if the training minimum is flat, the model should perform similarly on the slightly different test distribution.
+					Neural network training can be viewed as navigating a high-dimensional loss landscape. The geometry of this landscape, particularly around the minima where training converges, has been linked to generalization. Sharp minima, characterized by high curvature (large eigenvalues of the Hessian), suggest that small changes to weights cause large changes in loss. Flat minima, with low curvature, suggest robustness to perturbations. The connection to generalization comes from viewing the train-test gap as a perturbation: if the training minimum is flat, the model should perform similarly on the slightly different test distribution.
 					</p>
 
 					<p>
@@ -245,7 +245,7 @@
 					</p>
 
 					<p><b>Prior Findings on Noise Robustness.</b>
-					A striking finding from the original SAM paper is its robustness to label noise. On CIFAR-10 with randomly flipped labels, SAM matches or exceeds methods specifically designed for noisy labels <a href="#ref_3">[3]</a>. Baek et al. <a href="#ref_6">[6]</a> investigated why this occurs, finding that SAM implicitly upweights the gradient contribution from clean examples. Interestingly, they found that peak performance under noise occurs with early stopping, before full convergence—suggesting the mechanism differs from simply finding flatter final minima.
+					A striking finding from the original SAM paper is its robustness to label noise. On CIFAR-10 with randomly flipped labels, SAM matches or exceeds methods specifically designed for noisy labels <a href="#ref_3">[3]</a>. Baek et al. <a href="#ref_6">[6]</a> investigated why this occurs, finding that SAM implicitly upweights the gradient contribution from clean examples. Interestingly, they found that peak performance under noise occurs with early stopping, before full convergence, suggesting the mechanism differs from simply finding flatter final minima.
 					</p>
 
 					<p>
@@ -279,7 +279,7 @@
 						<li><b>Label noise:</b> 0%, 20%, or 40% of training labels randomly flipped to a different class.</li>
 					</ul>
 					<p>
-					This yields a 3×3 matrix of conditions, each evaluated with both SGD and SAM (18 total training runs). The test set remains clean in all cases—we measure generalization to the true data distribution.
+					This yields a 3×3 matrix of conditions, each evaluated with both SGD and SAM (18 total training runs). The test set remains clean in all cases; we measure generalization to the true data distribution.
 					</p>
 
 					<p><b>Metrics.</b>
@@ -299,7 +299,7 @@
 					<h1>Results</h1>
 
 					<p><b>Main Finding: Non-Monotonic Benefit.</b>
-					Figure 1 shows our central result: the difference in test accuracy between SAM and SGD across all conditions. The pattern is striking and unexpected. SAM's benefit is not monotonic with dataset size—it helps at the extremes (1% and 100% data) but <em>hurts</em> in the middle (10% data).
+					Figure 1 shows our central result: the difference in test accuracy between SAM and SGD across all conditions. The pattern is striking and unexpected. SAM's benefit is not monotonic with dataset size. It helps at the extremes (1% and 100% data) but <em>hurts</em> in the middle (10% data).
 					</p>
 
 					<img src="./images/fig1_heatmap.png" width="600px" style="margin: 20px auto;"/>
@@ -309,11 +309,11 @@
 					</p>
 
 					<p>
-					At full data with 40% label noise, SAM provides a substantial 6.34 percentage point improvement (80.90% vs 74.56%), confirming its known strength in noisy settings. But at 10% data with clean labels, SAM causes a 6.51 point <em>drop</em> (55.26% vs 61.77%)—a significant degradation that would matter in practice.
+					At full data with 40% label noise, SAM provides a substantial 6.34 percentage point improvement (80.90% vs 74.56%), confirming its known strength in noisy settings. But at 10% data with clean labels, SAM causes a 6.51 point <em>drop</em> (55.26% vs 61.77%), a significant degradation that would matter in practice.
 					</p>
 
 					<p><b>Training Dynamics.</b>
-					Figure 2 reveals how these differences emerge during training. In the small-data regime, both optimizers struggle and neither fits the training data well. In the intermediate regime, SGD fits the training data aggressively while SAM's flatness constraint prevents full fitting—leading to worse test performance despite a smaller generalization gap. At full data, both eventually fit well, but SAM's flatter solution transfers better to the test set.
+					Figure 2 reveals how these differences emerge during training. 					In the small-data regime, both optimizers struggle and neither fits the training data well. In the intermediate regime, SGD fits the training data aggressively while SAM's flatness constraint prevents full fitting, leading to worse test performance despite a smaller generalization gap. At full data, both eventually fit well, but SAM's flatter solution transfers better to the test set.
 					</p>
 
 					<img src="./images/fig2_learning_curves.png" width="700px" style="margin: 20px auto;"/>
@@ -322,7 +322,7 @@
 					</p>
 
 					<p>
-					The learning curves reveal a key distinction: at 10% data, SGD reaches 86.2% training accuracy while SAM reaches only 64.9%. SAM isn't just finding a flatter minimum—it's failing to fit the training data. The flatness constraint acts as excessive regularization when data is limited but not trivially small.
+					The learning curves reveal a key distinction: at 10% data, SGD reaches 86.2% training accuracy while SAM reaches only 64.9%. SAM isn't just finding a flatter minimum; it's failing to fit the training data. The flatness constraint acts as excessive regularization when data is limited but not trivially small.
 					</p>
 
 					<p><b>Sharpness and Generalization.</b>
@@ -336,7 +336,7 @@
 					</p>
 
 					<p>
-					Notably, at 100% data with no noise, SGD has sharpness 0.20 while SAM has 0.05—a 4× reduction—yet their test accuracies differ by less than 1%. This suggests that achieving flat minima is neither necessary nor sufficient for good generalization; what matters is whether the flatness constraint helps or hurts learning in the specific data regime.
+					Notably, at 100% data with no noise, SGD has sharpness 0.20 while SAM has 0.05 (a 4× reduction) yet their test accuracies differ by less than 1%. This suggests that achieving flat minima is neither necessary nor sufficient for good generalization; what matters is whether the flatness constraint helps or hurts learning in the specific data regime.
 					</p>
 
 					<p><b>Scaling Behavior.</b>
@@ -378,15 +378,15 @@
 					</p>
 
 					<p><b>Why SAM Hurts in the Intermediate Regime.</b>
-					The surprising negative results at 10% data demand explanation. We hypothesize that this regime represents a critical transition point. With 5,000 samples, there is enough data to learn meaningful features, but not enough for the model to generalize without extracting maximum signal from each example. SGD's willingness to fit the training data aggressively—even at the cost of sharpness—allows it to capture more of this limited signal. SAM's flatness constraint acts as excessive regularization, preventing the model from fitting well enough.
+					The surprising negative results at 10% data demand explanation. We hypothesize that this regime represents a critical transition point. With 5,000 samples, there is enough data to learn meaningful features, but not enough for the model to generalize without extracting maximum signal from each example. 					SGD's willingness to fit the training data aggressively, even at the cost of sharpness, allows it to capture more of this limited signal. SAM's flatness constraint acts as excessive regularization, preventing the model from fitting well enough.
 					</p>
 
 					<p>
-					The generalization gap data supports this interpretation. At 10% data with no noise, SGD has a large generalization gap (24.4%) but high test accuracy (61.8%). SAM has a much smaller gap (9.7%) but lower test accuracy (55.3%). SAM is technically "generalizing better" in the sense that train and test performance are similar—but both are worse because the model is underfitting.
+					The generalization gap data supports this interpretation. At 10% data with no noise, SGD has a large generalization gap (24.4%) but high test accuracy (61.8%). 					SAM has a much smaller gap (9.7%) but lower test accuracy (55.3%). SAM is technically "generalizing better" in the sense that train and test performance are similar, but both are worse because the model is underfitting.
 					</p>
 
 					<p><b>Why SAM Helps with Very Small Data.</b>
-					The positive results at 1% data were unexpected given our hypothesis that SAM would hurt with limited data. However, this regime is qualitatively different: with only 500 samples, both optimizers are in the underfitting regime. Neither can memorize the data effectively, and the test accuracies (33-37%) are barely above random. In this regime, SAM's regularization is not excessive—there's nothing to overfit anyway—and its implicit bias may provide a slight structural advantage.
+					The positive results at 1% data were unexpected given our hypothesis that SAM would hurt with limited data. However, this regime is qualitatively different: with only 500 samples, both optimizers are in the underfitting regime. Neither can memorize the data effectively, and the test accuracies (33-37%) are barely above random. 					In this regime, SAM's regularization is not excessive (there's nothing to overfit anyway) and its implicit bias may provide a slight structural advantage.
 					</p>
 
 					<p><b>Practical Recommendations.</b>
@@ -421,7 +421,7 @@
 					We conducted a systematic study of Sharpness-Aware Minimization across different data regimes, varying both dataset size and label noise. Our key finding is that SAM's benefit is non-monotonic with dataset size: it helps at the extremes (very small or full datasets) but can significantly hurt in intermediate regimes. At 10% data, SAM's flatness constraint causes underfitting, leading to a 6.5 percentage point drop in accuracy compared to standard SGD.
 					</p>
 					<p>
-					This finding has practical implications. SAM's 2× computational cost is justified when training on large, noisy datasets—where it provides substantial improvements—but may be counterproductive when data is limited. The flat minima hypothesis, while capturing important intuitions, is not a universal prescription: what matters is whether the inductive bias toward flatness helps or hurts learning in the specific setting.
+					This finding has practical implications. SAM's 2× computational cost is justified when training on large, noisy datasets (where it provides substantial improvements) but may be counterproductive when data is limited. The flat minima hypothesis, while capturing important intuitions, is not a universal prescription: what matters is whether the inductive bias toward flatness helps or hurts learning in the specific setting.
 					</p>
 					<p>
 					Future work could investigate whether adaptive methods (varying ρ based on data regime), alternative sharpness measures, or hybrid approaches could provide SAM's benefits more consistently. Understanding the precise transition points between regimes and how they depend on architecture and data complexity would also be valuable.
